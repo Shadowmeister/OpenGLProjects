@@ -107,12 +107,14 @@ include_directories("${PROJECT_BINARY_DIR}"
 set(LearnOpenGL_HEADER include/Shader.h
                        include/Camera.h
                        include/Object.h
+		       include/Texture.h
    )
 
 set(LearnOpenGL_SOURCE main.cpp
                        Object.cpp
                        Shader.cpp
                        Camera.cpp
+		       Texture.cpp
    )
 
 #add the executable
