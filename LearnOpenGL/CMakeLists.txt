@@ -48,6 +48,11 @@ if(CMAKE_COMPILER_IS_GNUCXX)
 	  message("Found GLEW")
 	endif()
 	
+	find_package(ASSIMP REQUIRED)
+	if(ASSIMP_FOUND)
+		message("Found ASSIMP")
+	endif()
+	
 	find_path(SOIL_INCLUDE_DIR SOIL/SOIL.h)
 	find_library(SOIL_LIBRARY SOIL)
 
@@ -83,9 +88,18 @@ elseif(MSVC)
 	if(SOIL_INCLUDE_DIR)
 		message("Found SOIL Includes")
 	endif()
-	find_library(SOIL_LIBRARY SOIL ${MSVC_LIBS_DIR}/Release)
+	find_library(SOIL_LIBRARY SOIL.lib ${MSVC_LIBS_DIR}/Release)
 	if(SOIL_LIBRARY)
 		message("Found SOIL Library")
+	endif()
+	
+	find_path(ASSIMP_INCLUDE_DIR assimp/ ${MSVC_INCLUDE_DIR})
+	if(ASSIMP_INCLUDE_DIR)
+		message("Found Assimp Includes")
+	endif()
+	find_library(ASSIMP_LIBRARY assimp.lib ${MSVC_LIBS_DIR})
+	if(ASSIMP_LIBRARY)
+		message("Found Assimp Library")
 	endif()
 endif(CMAKE_COMPILER_IS_GNUCXX)
 
@@ -94,6 +108,7 @@ set(LIBRARIES
    ${OPENGL_LIBRARIES}
    ${GLFW_STATIC_LIBRARIES}
    ${GLEW_LIBRARY}
+   ${ASSIMP_LIBRARY}
    ${ADDITIONAL_LIBS}
    ${SOIL_LIBRARY}
 )
@@ -102,6 +117,7 @@ include_directories("${PROJECT_BINARY_DIR}"
                     "${PROJECT_SOURCE_DIR}/include"
                     "${GLFW_INCLUDE_DIRS}"
 					"${GLEW_INCLUDE_DIRS}"
+					"${ASSIMP_INCLUDE_DIR}"
                     "${SOIL_INCLUDE_DIR}")
 
 set(LearnOpenGL_HEADER include/Shader.h
