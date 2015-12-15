@@ -11,7 +11,7 @@
 // GL includes
 #include "Shader.h"
 #include "Camera.h"
-#include "Object.h"
+#include "SimpleObject.h"
 #include "Texture.h"
 #include "LearnOpenGLConfig.h"
 
@@ -185,17 +185,17 @@ int main(int argc, char** argv)
 		-0.5f, 0.5f, -0.5f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f
 	};
 
-	Object container(&vertices[0], sizeof(vertices), 36, shaderProgram);
+	SimpleObject container(&vertices[0], sizeof(vertices), 36, shaderProgram);
 	container.AddAttrib(3, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), 0);
 	container.AddAttrib(3, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), 3 * sizeof(GLfloat));
 	container.AddAttrib(2, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), 6 * sizeof(GLfloat));
-	Object light(container, lampProgram);
+	SimpleObject light(container, lampProgram);
 	light.AddAttrib(3, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), 0);
 
 	// load textures
-	objectMaterial.diffuseTexture = std::unique_ptr < Texture > {new Texture("Textures/container2.png", GL_REPEAT, GL_REPEAT, GL_LINEAR_MIPMAP_LINEAR, GL_NEAREST_MIPMAP_NEAREST)};
-	objectMaterial.specularTexture = std::unique_ptr < Texture > {new Texture("Textures/container2_specular.png", GL_REPEAT, GL_REPEAT, GL_LINEAR_MIPMAP_LINEAR, GL_NEAREST_MIPMAP_NEAREST)};
-	objectMaterial.emissiveTexture = std::unique_ptr < Texture > {new Texture("Textures/matrix.jpg", GL_REPEAT, GL_REPEAT, GL_LINEAR_MIPMAP_LINEAR, GL_NEAREST_MIPMAP_NEAREST)};
+	objectMaterial.diffuseTexture = std::unique_ptr < Texture > {new Texture("Textures/container2.png", Texture::DIFFUSE, GL_REPEAT, GL_REPEAT, GL_LINEAR_MIPMAP_LINEAR, GL_NEAREST_MIPMAP_NEAREST)};
+	objectMaterial.specularTexture = std::unique_ptr < Texture > {new Texture("Textures/container2_specular.png", Texture::SPECULAR, GL_REPEAT, GL_REPEAT, GL_LINEAR_MIPMAP_LINEAR, GL_NEAREST_MIPMAP_NEAREST)};
+	objectMaterial.emissiveTexture = std::unique_ptr < Texture > {new Texture("Textures/matrix.jpg", Texture::EMISSIVE, GL_REPEAT, GL_REPEAT, GL_LINEAR_MIPMAP_LINEAR, GL_NEAREST_MIPMAP_NEAREST)};
 
 	// Set texture units
 	shaderProgram->use();

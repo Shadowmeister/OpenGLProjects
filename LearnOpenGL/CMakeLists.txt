@@ -106,12 +106,12 @@ include_directories("${PROJECT_BINARY_DIR}"
 
 set(LearnOpenGL_HEADER include/Shader.h
                        include/Camera.h
-                       include/Object.h
+                       include/SimpleObject.h
 		       include/Texture.h
    )
 
 set(LearnOpenGL_SOURCE main.cpp
-                       Object.cpp
+                       SimpleObject.cpp
                        Shader.cpp
                        Camera.cpp
 		       Texture.cpp

@@ -8,14 +8,23 @@
 class Texture
 {
 public:
-	Texture(const std::string& texturePath, GLint wrapSParam, GLint wrapTParam, GLint minFilterParam, GLint magFilterParam);
+	enum TextureTypes{
+		DIFFUSE,
+		SPECULAR,
+		EMISSIVE
+	};
+
+public:
+	Texture(const std::string& texturePath, TextureTypes type, GLint wrapSParam, GLint wrapTParam, GLint minFilterParam, GLint magFilterParam);
 	~Texture();
 
 	void Bind();
 	GLuint GetTextureID();
+	TextureTypes GetType();
 
 private:
 	GLuint m_TextureID;
+	TextureTypes m_Type;
 };
 
 #endif

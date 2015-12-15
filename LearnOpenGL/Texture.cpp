@@ -2,7 +2,8 @@
 #include <iostream>
 
 
-Texture::Texture(const std::string& texturePath, GLint wrapSParam, GLint wrapTParam, GLint minFilterParam, GLint magFilterParam)
+Texture::Texture(const std::string& texturePath, TextureTypes type, GLint wrapSParam, GLint wrapTParam, GLint minFilterParam, GLint magFilterParam) :
+	m_Type{ type }
 {
 	unsigned char* image;
 	int width, height;
@@ -37,4 +38,9 @@ void Texture::Bind()
 GLuint Texture::GetTextureID()
 {
 	return m_TextureID;
+}
+
+Texture::TextureTypes Texture::GetType()
+{
+	return m_Type;
 }
