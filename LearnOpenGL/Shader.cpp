@@ -91,6 +91,12 @@ Shader::Shader(const GLchar* vertexPath, const GLchar* fragmentPath)
 	glDeleteShader(fragment);
 }
 
+Shader::Shader(const std::string& vertexPath, const std::string& fragmentPath) :
+	Shader(vertexPath.c_str(), fragmentPath.c_str())
+{
+
+}
+
 void Shader::use()
 { 
   glUseProgram(this->Program); 

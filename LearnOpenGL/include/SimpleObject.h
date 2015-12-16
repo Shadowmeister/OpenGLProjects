@@ -36,7 +36,7 @@ public:
 
 	int AddAttrib(GLint size, GLenum type, GLboolean normalized, GLint stride, GLint offset);
 
-	void EnableAttrib(int location, bool enable);
+	void EnableAttrib(unsigned int location, bool enable);
 
 	void UpdateAttribs();
 

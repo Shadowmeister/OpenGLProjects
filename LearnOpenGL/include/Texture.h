@@ -1,6 +1,6 @@
 #ifndef _TEXTURE_H_
 #define _TEXTURE_H_
-
+#define GLEW_STATIC
 #include <GL/glew.h>
 #include <SOIL/SOIL.h>
 #include <string>

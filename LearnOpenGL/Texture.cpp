@@ -10,7 +10,7 @@ Texture::Texture(const std::string& texturePath, TextureTypes type, GLint wrapSP
 
 	glGenTextures(1, &m_TextureID);
 
-	image = SOIL_load_image("Textures/container2.png", &width, &height, 0, SOIL_LOAD_RGB);
+	image = SOIL_load_image(texturePath.c_str(), &width, &height, 0, SOIL_LOAD_RGB);
 
 	glBindTexture(GL_TEXTURE_2D, m_TextureID);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, image);

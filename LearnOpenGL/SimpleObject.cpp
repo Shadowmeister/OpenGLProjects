@@ -68,7 +68,7 @@ int SimpleObject::AddAttrib(GLint size, GLenum type, GLboolean normalized, GLint
 	return m_Attribs.size();
 }
 
-void SimpleObject::EnableAttrib(int location, bool enable)
+void SimpleObject::EnableAttrib(unsigned int location, bool enable)
 {
 	location--;
 	if (location < m_Attribs.size() && location >= 0)
@@ -89,7 +89,7 @@ void SimpleObject::UpdateAttribs()
 {
 	glBindVertexArray(VAO);
 	glBindBuffer(GL_ARRAY_BUFFER, *VBO);
-	for (int i = 0; i < m_Attribs.size(); i++)
+	for (unsigned int i = 0; i < m_Attribs.size(); i++)
 	{
 		if (m_Attribs[i].enabled)
 		{

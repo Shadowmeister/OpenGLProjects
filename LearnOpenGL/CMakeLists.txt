@@ -2,6 +2,8 @@ cmake_minimum_required (VERSION 2.8)
 cmake_policy(VERSION 2.8)
 project (LearnOpenGL)
 
+SET(PROJECT_NAME "LearnOpenGL")
+
 if(NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE Debug CACHE STRING "Choose the type of build (Debug or Release)" FORCE)
 endif(NOT CMAKE_BUILD_TYPE)
@@ -63,31 +65,17 @@ file(GLOB SOURCE
   "include/*.h"
   "*.cpp"
 )
-add_executable(LearnOpenGL ${SOURCE})
-target_link_libraries(LearnOpenGL ${LIBS})
+add_executable(${PROJECT_NAME} ${SOURCE})
+target_link_libraries(${PROJECT_NAME} ${LIBS})
 	if(WIN32)
-	  set_target_properties(LearnOpenGL PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/bin/LearnOpenGL")
+	  set_target_properties(${PROJECT_NAME} PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/bin/${PROJECT_NAME}")
 	elseif(UNIX)
-	  set_target_properties(LearnOpenGL PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/bin/LearnOpenGL")
+	  set_target_properties(${PROJECT_NAME} PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/bin/${PROJECT_NAME}")
 	endif(WIN32)
 	
-# Copy shader files to build directory
-file(GLOB SHADERS
-  "Shaders/*.vs"
-  "Shaders/*.frag"
-  "Shaders/*.gs"
-)
-foreach(SHADER ${SHADERS})
-  if(WIN32)
-    add_custom_command(TARGET LearnOpenGL PRE_BUILD COMMAND ${CMAKE_COMMAND} -E copy ${SHADER} $<TARGET_FILE_DIR:LearnOpenGL>)
-  elseif(UNIX)
-    file(COPY ${SHADER} DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/bin/LearnOpenGL)
-  endif(WIN32)
-endforeach(SHADER)
-
 # if compiling for visual studio, also use configure file for each project (specifically to set up working directory)
 if(MSVC)
-  configure_file(${CMAKE_SOURCE_DIR}/configuration/visualstudio.vcxproj.user.in ${CMAKE_CURRENT_BINARY_DIR}/LearnOpenGL.vcxproj.user @ONLY)
+  configure_file(${CMAKE_SOURCE_DIR}/configuration/visualstudio.vcxproj.user.in ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.vcxproj.user @ONLY)
 endif(MSVC)
 
 include_directories(${CMAKE_SOURCE_DIR}/include)
