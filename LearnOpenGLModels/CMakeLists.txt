@@ -1,7 +1,7 @@
 cmake_minimum_required (VERSION 2.8)
 cmake_policy(VERSION 2.8)
 
-SET(PROJECT_NAME "LearnOpenGL")
+SET(PROJECT_NAME "LearnOpenGLModels")
 project (${PROJECT_NAME})
 
 if(NOT CMAKE_BUILD_TYPE)
