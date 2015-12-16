@@ -68,7 +68,7 @@ target_link_libraries(LearnOpenGL ${LIBS})
 	if(WIN32)
 	  set_target_properties(LearnOpenGL PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/bin/LearnOpenGL")
 	elseif(UNIX)
-	  set_target_properties(LearnOpenGL PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR/bin/LearnOpenGL")
+	  set_target_properties(LearnOpenGL PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/bin/LearnOpenGL")
 	endif(WIN32)
 	
 # Copy shader files to build directory
@@ -81,7 +81,7 @@ foreach(SHADER ${SHADERS})
   if(WIN32)
     add_custom_command(TARGET LearnOpenGL PRE_BUILD COMMAND ${CMAKE_COMMAND} -E copy ${SHADER} $<TARGET_FILE_DIR:LearnOpenGL>)
   elseif(UNIX)
-    file(COPY ${SHADER} DESTINATION ${CMAKE_CURRENT_BINARY_DIR/bin/LearnOpenGL)
+    file(COPY ${SHADER} DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/bin/LearnOpenGL)
   endif(WIN32)
 endforeach(SHADER)
 
