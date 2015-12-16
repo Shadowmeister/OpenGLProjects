@@ -53,8 +53,8 @@ void Camera::ProcessKeyboard(Camera_Movement direction, GLfloat deltaTime)
 
 void Camera::ProcessMouseMovement(GLfloat xoffset, GLfloat yoffset, GLboolean constrainPitch)
 {
-	xoffset *= this->MouseSensitivity;
-	yoffset *= this->MouseSensitivity;
+	xoffset *= this->MouseSensitivity * (this->Zoom / ZOOM);
+	yoffset *= this->MouseSensitivity * (this->Zoom / ZOOM);
 
 	this->Yaw += xoffset;
 	this->Pitch += yoffset;
@@ -78,7 +78,7 @@ void Camera::ProcessMouseMovement(GLfloat xoffset, GLfloat yoffset, GLboolean co
 
 void Camera::ProcessMouseScroll(GLfloat yoffset)
 {
-	if (this->Zoom >= 1.0f && this->Zoom <= 45.0f)
+	if (this->Zoom >= 1.0f && this->Zoom <= ZOOM)
 	{
 		this->Zoom -= yoffset;
 	}
@@ -86,9 +86,9 @@ void Camera::ProcessMouseScroll(GLfloat yoffset)
 	{
 		this->Zoom = 1.0f;
 	}
-	if (this->Zoom >= 45.0f)
+	if (this->Zoom >= ZOOM)
 	{
-		this->Zoom = 45.0f;
+		this->Zoom = ZOOM;
 	}
 }
 

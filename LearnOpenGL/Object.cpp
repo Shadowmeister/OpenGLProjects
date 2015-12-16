@@ -63,7 +63,7 @@ Object::~Object()
 
 int Object::AddAttrib(GLint size, GLenum type, GLboolean normalized, GLint stride, GLint offset)
 {
-	m_Attribs.emplace_back(Attrib{ true, size, type, normalized, stride, (GLvoid*)offset });
+	m_Attribs.emplace_back(Attrib{ true, size, type, normalized, stride, (GLvoid*)(long)offset });
 	m_AttribsUpdated = false;
 	return m_Attribs.size();
 }
@@ -83,6 +83,7 @@ void Object::EnableAttrib(int location, bool enable)
 	{
 		std::cout << "Location " << location + 1 << "Does not exist" << std::endl;
 	}
+
 }
 
 void Object::UpdateAttribs()

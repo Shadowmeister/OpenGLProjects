@@ -281,7 +281,7 @@ int main(int argc, char** argv)
 
 		// Create camera transformations
 		glm::mat4 view = camera.GetViewMatrix();
-		glm::mat4 projection = glm::perspective(camera.Zoom, (float)screenWidth / (float)screenHeight, 0.1f, 100.0f);
+		glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)screenWidth / (float)screenHeight, 0.1f, 100.0f);
 		// Pass matrices to the shader
 		glUniformMatrix4fv(shaderProgram->getUniformLocation("view"), 1, GL_FALSE, glm::value_ptr(view));
 		glUniformMatrix4fv(shaderProgram->getUniformLocation("projection"), 1, GL_FALSE, glm::value_ptr(projection));
