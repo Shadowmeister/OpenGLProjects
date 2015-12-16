@@ -2,8 +2,10 @@ CMakeCache.txt
 CMakeFiles
 CMakeScripts
 Makefile
+LearnOpenGL
 cmake_install.cmake
 install_manifest.txt
 ycm_extra_conf.py
 .ycm_extra_conf.py
 .ycm_extra_conf.pyc
+bin

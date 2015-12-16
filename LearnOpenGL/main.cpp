@@ -11,7 +11,8 @@
 // GL includes
 #include "Shader.h"
 #include "Camera.h"
-#include "Object.h"
+#include "SimpleObject.h"
+#include "Texture.h"
 #include "LearnOpenGLConfig.h"
 
 // GLM Mathematics
@@ -26,9 +27,9 @@
 const GLuint screenWidth = 1920, screenHeight = 1080;
 
 struct Material {
-	GLuint diffuseTexture;
-	GLuint specularTexture;
-	GLuint emissiveTexture;
+	std::unique_ptr<Texture> diffuseTexture;
+	std::unique_ptr<Texture> specularTexture;
+	std::unique_ptr<Texture> emissiveTexture;
 	GLfloat shininess;
 };
 
@@ -64,7 +65,7 @@ GLfloat lastX = screenWidth / 2.0f;
 GLfloat lastY = screenHeight / 2.0f;
 bool keys[1024];
 
-Material objectMaterial{ 0, 0, 0, 8.0f };
+Material objectMaterial{ nullptr, nullptr, nullptr, 8.0f };
 DirLight dirLight{glm::vec3(-0.2f, -1.0f, -0.3f), glm::vec3(0.05f, 0.05f, 0.05f), glm::vec3(0.4f, 0.4f, 0.4f), glm::vec3(0.5f, 0.5f, 0.5f)};
 PointLight lightProperties[]{ 
 		PointLight{ glm::vec3(0.7f, 0.2f, 2.0f), 1.0f, 0.09f, 0.032f, glm::vec3(0.05f, 0.05f, 0.05f), glm::vec3(0.8f, 0.8f, 0.8f), glm::vec3(1.0f, 1.0f, 1.0f) },
@@ -184,51 +185,17 @@ int main(int argc, char** argv)
 		-0.5f, 0.5f, -0.5f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f
 	};
 
-	Object container(&vertices[0], sizeof(vertices), 36, shaderProgram);
+	SimpleObject container(&vertices[0], sizeof(vertices), 36, shaderProgram);
 	container.AddAttrib(3, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), 0);
 	container.AddAttrib(3, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), 3 * sizeof(GLfloat));
 	container.AddAttrib(2, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), 6 * sizeof(GLfloat));
-	Object light(container, lampProgram);
+	SimpleObject light(container, lampProgram);
 	light.AddAttrib(3, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), 0);
 
-	// Load textures
-	glGenTextures(1, &objectMaterial.diffuseTexture);
-	glGenTextures(1, &objectMaterial.specularTexture);
-	glGenTextures(1, &objectMaterial.emissiveTexture);
-	int width, height;
-	unsigned char* image;
-	// Diffuse map
-	image = SOIL_load_image("Textures/container2.png", &width, &height, 0, SOIL_LOAD_RGB);
-	glBindTexture(GL_TEXTURE_2D, objectMaterial.diffuseTexture);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, image);
-	glGenerateMipmap(GL_TEXTURE_2D);
-	SOIL_free_image_data(image);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST_MIPMAP_NEAREST);
-	// Specular map
-	image = SOIL_load_image("Textures/container2_specular.png", &width, &height, 0, SOIL_LOAD_RGB);
-	glBindTexture(GL_TEXTURE_2D, objectMaterial.specularTexture);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, image);
-	glGenerateMipmap(GL_TEXTURE_2D);
-	SOIL_free_image_data(image);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST_MIPMAP_NEAREST);
-	glBindTexture(GL_TEXTURE_2D, 0);
-	// Emissive map
-	image = SOIL_load_image("Textures/matrix.jpg", &width, &height, 0, SOIL_LOAD_RGB);
-	glBindTexture(GL_TEXTURE_2D, objectMaterial.emissiveTexture);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, image);
-	glGenerateMipmap(GL_TEXTURE_2D);
-	SOIL_free_image_data(image);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST_MIPMAP_NEAREST);
-	glBindTexture(GL_TEXTURE_2D, 0);
+	// load textures
+	objectMaterial.diffuseTexture = std::unique_ptr < Texture > {new Texture("Textures/container2.png", Texture::DIFFUSE, GL_REPEAT, GL_REPEAT, GL_LINEAR_MIPMAP_LINEAR, GL_NEAREST_MIPMAP_NEAREST)};
+	objectMaterial.specularTexture = std::unique_ptr < Texture > {new Texture("Textures/container2_specular.png", Texture::SPECULAR, GL_REPEAT, GL_REPEAT, GL_LINEAR_MIPMAP_LINEAR, GL_NEAREST_MIPMAP_NEAREST)};
+	objectMaterial.emissiveTexture = std::unique_ptr < Texture > {new Texture("Textures/matrix.jpg", Texture::EMISSIVE, GL_REPEAT, GL_REPEAT, GL_LINEAR_MIPMAP_LINEAR, GL_NEAREST_MIPMAP_NEAREST)};
 
 	// Set texture units
 	shaderProgram->use();
@@ -288,13 +255,13 @@ int main(int argc, char** argv)
 
 		// Bind diffuse map
 		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, objectMaterial.diffuseTexture);
+		objectMaterial.diffuseTexture->Bind();
 		// Bind specular map
 		glActiveTexture(GL_TEXTURE1);
-		glBindTexture(GL_TEXTURE_2D, objectMaterial.specularTexture);
+		objectMaterial.specularTexture->Bind();
 		// Bind emissive map
 		glActiveTexture(GL_TEXTURE2);
-		glBindTexture(GL_TEXTURE_2D, objectMaterial.emissiveTexture);
+		objectMaterial.emissiveTexture->Bind();
 		
 		// Draw the container (using container's vertex attributes)
 		glm::mat4 model;
