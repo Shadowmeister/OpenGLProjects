@@ -62,6 +62,7 @@ Mesh Model::processMesh(aiMesh* mesh, const aiScene* scene)
 		vector.x = mesh->mNormals[i].x;
 		vector.y = mesh->mNormals[i].y;
 		vector.z = mesh->mNormals[i].z;
+		vertex.Normal = vector;
 
 		if (mesh->mTextureCoords[0]) // Does the mesh contain texture coordinates?
 		{
@@ -91,17 +92,21 @@ Mesh Model::processMesh(aiMesh* mesh, const aiScene* scene)
 	if (mesh->mMaterialIndex >= 0)
 	{
 		aiMaterial* material = scene->mMaterials[mesh->mMaterialIndex];
+
 		std::vector<Texture> diffuseMaps = this->loadMaterialTextures(material, aiTextureType_DIFFUSE, Texture::DIFFUSE);
-		textures.insert(textures.end(), std::begin(diffuseMaps), std::end(diffuseMaps));
+		textures.insert(textures.end(), std::make_move_iterator(diffuseMaps.begin()), std::make_move_iterator(diffuseMaps.end()));
 
 		std::vector<Texture> specularMaps = this->loadMaterialTextures(material, aiTextureType_SPECULAR, Texture::SPECULAR);
-		textures.insert(textures.end(), std::begin(specularMaps), std::end(specularMaps));
+		textures.insert(textures.end(), std::make_move_iterator(specularMaps.begin()), std::make_move_iterator(specularMaps.end()));
 
 		std::vector<Texture> emissiveMaps = this->loadMaterialTextures(material, aiTextureType_EMISSIVE, Texture::EMISSIVE);
-		textures.insert(textures.end(), std::begin(emissiveMaps), std::end(emissiveMaps));
+		textures.insert(textures.end(), std::make_move_iterator(emissiveMaps.end()), std::make_move_iterator(emissiveMaps.end()));
+
+		std::vector<Texture> normalMaps = this->loadMaterialTextures(material, aiTextureType_NORMALS, Texture::NORMAL);
+		textures.insert(textures.end(), std::make_move_iterator(normalMaps.end()), std::make_move_iterator(normalMaps.end()));
 	}
 
-	return Mesh(vertices, indices, textures);
+	return Mesh(std::move(vertices), std::move(indices), std::move(textures));
 }
 
 std::vector<Texture> Model::loadMaterialTextures(aiMaterial* mat, aiTextureType type, const Texture::TextureTypes textureType)
@@ -125,7 +130,7 @@ std::vector<Texture> Model::loadMaterialTextures(aiMaterial* mat, aiTextureType 
 		{
 			Texture texture(str.C_Str(), this->directory,textureType, GL_REPEAT, GL_REPEAT, GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR);
 			textures.push_back(texture);
-			this->textures_loaded.push_back(texture); // Store it as a texture loaded for entire model, to ensure we won't unnecessarly load duplicate textures;
+			this->textures_loaded.push_back(std::move(texture)); // Store it as a texture loaded for entire model, to ensure we won't unnecessarly load duplicate textures;
 		}
 	}
 	return textures;

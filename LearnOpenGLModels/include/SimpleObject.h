@@ -10,6 +10,7 @@ struct VBODeleter {
 	void operator()(GLuint* vbo) const {
 		std::cout << "Deleting VBO: " << vbo << std::endl;
 		glDeleteBuffers(1, vbo);
+		delete vbo;
 	}
 };
 

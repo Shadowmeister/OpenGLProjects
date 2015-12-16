@@ -17,6 +17,9 @@ struct Vertex {
 class Mesh {
 public:
 	Mesh(std::vector<Vertex>& vertices, std::vector<GLuint>& indices, std::vector<Texture>& textures);
+	Mesh(std::vector<Vertex>&& vertices, std::vector<GLuint>&& indices, std::vector<Texture>&& textures);
+	Mesh(const Mesh& other) = delete;
+	Mesh(Mesh&& other);
 	void Draw(const Shader& shader);
 private:
 	/* Mesh data */

@@ -1,10 +1,24 @@
 #ifndef _TEXTURE_H_
 #define _TEXTURE_H_
+
+#include <memory>
+#include <iostream>
+
 #define GLEW_STATIC
 #include <GL/glew.h>
 #include <SOIL/SOIL.h>
 #include <string>
 #include <assimp/Importer.hpp>
+
+struct TextureIDDeleter
+{
+	void operator()(GLuint* id)
+	{
+		std::cout << "Deleting Texture " << *id << std::endl;
+		glDeleteTextures(1, id);
+		delete id;
+	}
+};
 
 class Texture
 {
@@ -12,12 +26,18 @@ public:
 	enum TextureTypes{
 		DIFFUSE,
 		SPECULAR,
-		EMISSIVE
+		EMISSIVE,
+		NORMAL
 	};
 
 public:
 	Texture(const std::string& texturePath, const std::string& directory, TextureTypes type, GLint wrapSParam, GLint wrapTParam, GLint minFilterParam, GLint magFilterParam);
 	Texture(const Texture& other);
+	Texture(Texture&& other) _NOEXCEPT;
+
+	Texture& operator=(const Texture& other);
+	Texture& operator=(Texture&& other);
+
 	~Texture();
 
 	void Bind();
@@ -26,7 +46,7 @@ public:
 	aiString GetPath();
 
 private:
-	GLuint m_TextureID;
+	std::shared_ptr<GLuint> m_TextureID;
 	TextureTypes m_Type;
 	aiString m_Path;
 };
