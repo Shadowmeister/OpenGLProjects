@@ -196,9 +196,9 @@ int main(int argc, char** argv)
 	light.AddAttrib(3, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), 0);
 
 	// load textures
-	objectMaterial.diffuseTexture = std::unique_ptr < Texture > {new Texture(root_dir+"/Textures/container2.png", Texture::DIFFUSE, GL_REPEAT, GL_REPEAT, GL_LINEAR_MIPMAP_LINEAR, GL_NEAREST_MIPMAP_NEAREST)};
-	objectMaterial.specularTexture = std::unique_ptr < Texture > {new Texture(root_dir+"/Textures/container2_specular.png", Texture::SPECULAR, GL_REPEAT, GL_REPEAT, GL_LINEAR_MIPMAP_LINEAR, GL_NEAREST_MIPMAP_NEAREST)};
-	objectMaterial.emissiveTexture = std::unique_ptr < Texture > {new Texture(root_dir+"/Textures/matrix.jpg", Texture::EMISSIVE, GL_REPEAT, GL_REPEAT, GL_LINEAR_MIPMAP_LINEAR, GL_NEAREST_MIPMAP_NEAREST)};
+	objectMaterial.diffuseTexture = std::unique_ptr < Texture > {new Texture("container2.png", root_dir + "/Textures", Texture::DIFFUSE, GL_REPEAT, GL_REPEAT, GL_LINEAR_MIPMAP_LINEAR, GL_NEAREST_MIPMAP_NEAREST)};
+	objectMaterial.specularTexture = std::unique_ptr < Texture > {new Texture("container2_specular.png", root_dir + "/Textures", Texture::SPECULAR, GL_REPEAT, GL_REPEAT, GL_LINEAR_MIPMAP_LINEAR, GL_NEAREST_MIPMAP_NEAREST)};
+	objectMaterial.emissiveTexture = std::unique_ptr < Texture > {new Texture("matrix.jpg", root_dir + "/Textures", Texture::EMISSIVE, GL_REPEAT, GL_REPEAT, GL_LINEAR_MIPMAP_LINEAR, GL_NEAREST_MIPMAP_NEAREST)};
 
 	// Set texture units
 	shaderProgram->use();

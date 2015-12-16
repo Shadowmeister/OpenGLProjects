@@ -21,7 +21,7 @@ public:
 	// Use the program
 	void use();
 
-	GLuint getUniformLocation(const GLchar* name);
+	GLuint getUniformLocation(const GLchar* name) const;
 };
 
 #endif
