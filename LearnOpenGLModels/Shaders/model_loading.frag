@@ -17,54 +17,69 @@ struct PointLight {
 };
 
 #define NR_POINT_LIGHTS 2
+#define kPi 3.1415
 
-in vec3 fragPosition;
-in vec2 TexCoords;
-in vec3 TangentLightPos[NR_POINT_LIGHTS];
-in vec3 TangentViewPos;
-in vec3 TangentFragPos;
+in VS_OUT {
+	vec3 FragPos;
+	vec3 Normal;
+	vec2 TexCoords;
+	vec3 Tangent;
+	vec3 Bitangent;
+	mat3 TBN;
+	vec3 TangentLightPos[NR_POINT_LIGHTS];
+	vec3 TangentViewPos;
+	vec3 TangentFragPos;
+} fs_in;
 
-out vec4 color;
+
+out vec4 FragColor;
 
 uniform PointLight pointLights[NR_POINT_LIGHTS];
 uniform Material material;
+
+uniform vec3 lightPos[NR_POINT_LIGHTS];
+uniform vec3 viewPos;
 
 vec3 CalcPointLight(vec3 lightPos, PointLight light, Material mat, vec3 normal, vec3 fragPos, vec3 viewDir);
 
 void main()
 {
 	vec3 result;
-	vec3 viewDir = normalize(TangentViewPos - TangentFragPos);
-	vec3 norm = texture(material.texture_height1, TexCoords).rgb; 
-	norm = normalize(norm * 2.0 - 1.0);
+	vec3 normal = fs_in.Normal;
+	mat3 tbn;
+	normal = texture(material.texture_height1, fs_in.TexCoords).rgb; 
+	normal = normalize(normal * 2.0 - 1.0);
+	vec3 viewDir = normalize(fs_in.TangentViewPos - fs_in.TangentFragPos);
 
-	for(int i = 0; i < NR_POINT_LIGHTS; i++)
-  {
-		result += CalcPointLight(TangentLightPos[i], pointLights[i], material, norm, TangentFragPos, viewDir);
-  }
+	for(int i = 1; i < NR_POINT_LIGHTS; i++)
+	{
+		result += CalcPointLight(fs_in.TangentLightPos[i], pointLights[i], material, normal, fs_in.TangentFragPos, viewDir);
+	}
+	//result / NR_POINT_LIGHTS;
 
-	color = vec4(result, 1.0f);
+	FragColor = vec4(result, 1.0f);
 }
 
 vec3 CalcPointLight(vec3 lightPos, PointLight light, Material mat, vec3 normal, vec3 fragPos, vec3 viewDir)
 {
+	vec3 color = texture(mat.texture_diffuse1, fs_in.TexCoords).rgb;
+
 	vec3 lightDir = normalize(lightPos - fragPos);
 	// Diffuse shading
 	float diff = max(dot(lightDir, normal), 0.0);
 	// Specular shading
-	vec3 reflectDir = reflect(-lightDir, normal);
 	vec3 halfwayDir = normalize(lightDir + viewDir);
-	float spec = pow(max(dot(normal, halfwayDir), 0.0), mat.shininess);
+	float spec = pow(max(dot(normal, halfwayDir), 0.0), material.shininess);
 	// Attenuation
 	float distance = length(lightPos - fragPos);
-	float attenuation = 1.0f;// / (light.constant + light.linear * distance + light.quadratic * (distance * distance));
+	float attenuation = 1.0f / (light.constant + light.linear * distance + light.quadratic * (distance * distance));
 	// Combine results
-	vec3 ambient = light.ambient * vec3(texture(mat.texture_diffuse1, TexCoords));
-	vec3 diffuse = light.diffuse * diff * vec3(texture(mat.texture_diffuse1, TexCoords));
-	vec3 specular = light.specular * spec * vec3(texture(mat.texture_specular1, TexCoords));
+	vec3 ambient = light.ambient * color;
+	vec3 diffuse = light.diffuse * diff * color;
+	vec3 specular = light.specular * spec * ((material.shininess + 8)/8*kPi);
 	ambient *= attenuation;
 	diffuse *= attenuation;
 	specular *= attenuation;
 	return (ambient + diffuse + specular);
-	//return diffuse;
+	//return specular;
 }

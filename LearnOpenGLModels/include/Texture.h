@@ -10,6 +10,10 @@
 #include <string>
 #include <assimp/Importer.hpp>
 
+#ifdef _WIN32
+#define noexcept throw()
+#endif
+
 struct TextureIDDeleter
 {
 	void operator()(GLuint* id)
