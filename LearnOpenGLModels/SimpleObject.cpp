@@ -1,8 +1,8 @@
 #include <SimpleObject.h>
 
 SimpleObject::SimpleObject(GLfloat* bufferArray, size_t sizeofBuffer, GLuint numVertices, std::shared_ptr<Shader>& shader) :
-	m_BufferArray{ bufferArray }, 
-	m_Shader{ shader }
+	m_Shader{ shader },
+	m_BufferArray{ bufferArray } 
 {
 	glGenVertexArrays(1, &VAO);
 	VBO.reset(new GLuint, VBODeleter());
@@ -22,10 +22,10 @@ SimpleObject::SimpleObject(GLfloat* bufferArray, size_t sizeofBuffer, GLuint num
 }
 
 SimpleObject::SimpleObject(const SimpleObject& other) :
-	VBO{ other.VBO }, 
-	m_NumVertices{ other.m_NumVertices }, 
 	m_Shader{ other.m_Shader }, 
-	m_BufferArray{other.m_BufferArray}
+	m_BufferArray{other.m_BufferArray},
+	VBO{ other.VBO }, 
+	m_NumVertices{ other.m_NumVertices } 
 {
 	glGenVertexArrays(1, &VAO);
 	glBindVertexArray(VAO);
@@ -39,10 +39,10 @@ SimpleObject::SimpleObject(const SimpleObject& other) :
 }
 
 SimpleObject::SimpleObject(const SimpleObject& other, std::shared_ptr<Shader>& shader) :
-  VBO{ other.VBO },
-  m_NumVertices{ other.m_NumVertices },
   m_Shader{ shader },
-  m_BufferArray{ other.m_BufferArray }
+  m_BufferArray{ other.m_BufferArray },
+  VBO{ other.VBO },
+  m_NumVertices{ other.m_NumVertices }
 {
   glGenVertexArrays(1, &VAO);
   glBindVertexArray(VAO);
@@ -63,7 +63,7 @@ SimpleObject::~SimpleObject()
 
 int SimpleObject::AddAttrib(GLint size, GLenum type, GLboolean normalized, GLint stride, GLint offset)
 {
-	m_Attribs.emplace_back(Attrib{ true, size, type, normalized, stride, (GLvoid*)offset });
+	m_Attribs.emplace_back(Attrib{ true, size, type, normalized, stride, (GLvoid*)(size_t)offset });
 	m_AttribsUpdated = false;
 	return m_Attribs.size();
 }

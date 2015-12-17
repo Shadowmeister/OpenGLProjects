@@ -1,4 +1,5 @@
 #include "Model.h"
+#include "assimp/cimport.h"
 
 Model::Model(const std::string& path)
 {
@@ -16,7 +17,7 @@ void Model::Draw(const Shader& shader)
 void Model::loadModel(const std::string& path)
 {
 	Assimp::Importer import;
-	const aiScene* scene = import.ReadFile(path, aiProcess_Triangulate | aiProcess_FlipUVs);
+	const aiScene* scene = import.ReadFile(path, aiProcess_Triangulate | aiProcess_FlipUVs | aiProcess_CalcTangentSpace);
 
 	if (!scene || scene->mFlags == AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode)
 	{
@@ -24,7 +25,7 @@ void Model::loadModel(const std::string& path)
 		return;
 	}
 	this->directory = path.substr(0, path.find_last_of('/'));
-
+  
 	this->processNode(scene->mRootNode, scene);
 }
 
@@ -49,6 +50,15 @@ Mesh Model::processMesh(aiMesh* mesh, const aiScene* scene)
 	std::vector<GLuint> indices;
 	std::vector<Texture> textures;
 
+  if(mesh->HasTangentsAndBitangents())
+  {
+    std::cout << "mesh has tangents and bitangents" << std::endl;
+  }
+  else
+  {
+    std::cout << "mesh does not have tangents and bitangents" << std::endl;
+  }
+  
 	for (GLuint i = 0; i < mesh->mNumVertices; i++)
 	{
 		Vertex vertex;
@@ -64,7 +74,17 @@ Mesh Model::processMesh(aiMesh* mesh, const aiScene* scene)
 		vector.z = mesh->mNormals[i].z;
 		vertex.Normal = vector;
 
-		if (mesh->mTextureCoords[0]) // Does the mesh contain texture coordinates?
+		vector.x = mesh->mTangents[i].x;
+		vector.y = mesh->mTangents[i].y;
+		vector.z = mesh->mTangents[i].z;
+    vertex.Tangent = vector;
+
+    vector.x = mesh->mBitangents[i].x;
+    vector.y = mesh->mBitangents[i].y;
+    vector.z = mesh->mBitangents[i].z;
+    vertex.Bitangent = vector;
+
+		if (mesh->HasTextureCoords(0)) // Does the mesh contain texture coordinates?
 		{
 			glm::vec2 vec;
 			vec.x = mesh->mTextureCoords[0][i].x;
@@ -74,6 +94,7 @@ Mesh Model::processMesh(aiMesh* mesh, const aiScene* scene)
 		else
 		{
 			vertex.TexCoords = glm::vec2(0.0f, 0.0f);
+      std::cout << "mesh does not have texture coords" << std::endl;
 		}
 
 		vertices.push_back(vertex);
@@ -99,11 +120,8 @@ Mesh Model::processMesh(aiMesh* mesh, const aiScene* scene)
 		std::vector<Texture> specularMaps = this->loadMaterialTextures(material, aiTextureType_SPECULAR, Texture::SPECULAR);
 		textures.insert(textures.end(), std::make_move_iterator(specularMaps.begin()), std::make_move_iterator(specularMaps.end()));
 
-		std::vector<Texture> emissiveMaps = this->loadMaterialTextures(material, aiTextureType_EMISSIVE, Texture::EMISSIVE);
-		textures.insert(textures.end(), std::make_move_iterator(emissiveMaps.end()), std::make_move_iterator(emissiveMaps.end()));
-
-		std::vector<Texture> normalMaps = this->loadMaterialTextures(material, aiTextureType_NORMALS, Texture::NORMAL);
-		textures.insert(textures.end(), std::make_move_iterator(normalMaps.end()), std::make_move_iterator(normalMaps.end()));
+		std::vector<Texture> heightMaps = this->loadMaterialTextures(material, aiTextureType_HEIGHT, Texture::HEIGHT);
+		textures.insert(textures.end(), std::make_move_iterator(heightMaps.begin()), std::make_move_iterator(heightMaps.end()));
 	}
 
 	return Mesh(std::move(vertices), std::move(indices), std::move(textures));
@@ -128,7 +146,7 @@ std::vector<Texture> Model::loadMaterialTextures(aiMaterial* mat, aiTextureType 
 		}
 		if (!skip)
 		{
-			Texture texture(str.C_Str(), this->directory,textureType, GL_REPEAT, GL_REPEAT, GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR);
+			Texture texture(str.C_Str(), this->directory, textureType, GL_REPEAT, GL_REPEAT, GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR);
 			textures.push_back(texture);
 			this->textures_loaded.push_back(std::move(texture)); // Store it as a texture loaded for entire model, to ensure we won't unnecessarly load duplicate textures;
 		}

@@ -51,6 +51,12 @@ void Mesh::setupMesh()
 	// Vertex Texture Coords
 	glEnableVertexAttribArray(2);
 	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (GLvoid*)offsetof(Vertex, TexCoords));
+  // Vertex Tangent
+  glEnableVertexAttribArray(3);
+  glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (GLvoid*)offsetof(Vertex, Tangent));
+  // Vertex Bitangent
+  glEnableVertexAttribArray(4);
+  glVertexAttribPointer(4, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (GLvoid*)offsetof(Vertex, Bitangent));
 
 	glBindVertexArray(0);
 }
@@ -59,8 +65,7 @@ void Mesh::Draw(const Shader& shader)
 {
 	GLuint diffuseNr = 1;
 	GLuint specularNr = 1;
-	GLuint emissiveNr = 1;
-	GLuint normalNr = 1;
+	GLuint heightNr = 1;
 	for (GLuint i = 0; i < this->textures.size(); i++)
 	{
 		glActiveTexture(GL_TEXTURE0 + i); // Activate proper texture unit before binding
@@ -77,20 +82,24 @@ void Mesh::Draw(const Shader& shader)
 			name += "specular";
 			name += std::to_string(specularNr++);
 		}
-		else if (type == Texture::EMISSIVE)
+		else if (type == Texture::HEIGHT)
 		{
-			name += "emissive";
-			name += std::to_string(emissiveNr++);
-		}
-		else if (type == Texture::NORMAL)
-		{
-			name += "normal";
-			name += std::to_string(normalNr++);
+			name += "height";
+			name += std::to_string(heightNr++);
 		}
 
 		glUniform1i(shader.getUniformLocation(name.c_str()), i);
 		this->textures[i].Bind();
 	}
+
+  if(heightNr == 1)
+  {
+    std::cout << "no normal map for this mesh" << std::endl;
+    for(GLuint i = 0; i < this->textures.size(); i++)
+    {
+      std::cout << "\t" << this->textures[i].GetPath().C_Str() << std::endl;
+    }
+  }
 
 	glUniform1f(shader.getUniformLocation("material.shininess"), 16.0f);
 

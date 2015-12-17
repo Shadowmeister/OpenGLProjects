@@ -148,7 +148,7 @@ int main(int argc, char** argv)
 		// Set the lighting uniforms
 		glUniform3f(shaderProgram->getUniformLocation("viewPos"), camera.Position.x, camera.Position.y, camera.Position.z);
 
-		glUniform3f(shaderProgram->getUniformLocation("pointLights[0].position"), pointLightPositions[0].x, pointLightPositions[0].y, pointLightPositions[0].z);
+		glUniform3f(shaderProgram->getUniformLocation("lightPos[0]"), pointLightPositions[0].x, pointLightPositions[0].y, pointLightPositions[0].z);
 		glUniform3f(shaderProgram->getUniformLocation("pointLights[0].ambient"), 0.05f, 0.05f, 0.05f);
 		glUniform3f(shaderProgram->getUniformLocation("pointLights[0].diffuse"), 1.0f, 1.0f, 1.0f);
 		glUniform3f(shaderProgram->getUniformLocation("pointLights[0].specular"), 1.0f, 1.0f, 1.0f);
@@ -156,7 +156,7 @@ int main(int argc, char** argv)
 		glUniform1f(shaderProgram->getUniformLocation("pointLights[0].linear"), 0.009);
 		glUniform1f(shaderProgram->getUniformLocation("pointLights[0].quadratic"), 0.0032);
 
-		glUniform3f(shaderProgram->getUniformLocation("pointLights[1].position"), pointLightPositions[1].x, pointLightPositions[1].y, pointLightPositions[1].z);
+		glUniform3f(shaderProgram->getUniformLocation("lightPos[1]"), pointLightPositions[1].x, pointLightPositions[1].y, pointLightPositions[1].z);
 		glUniform3f(shaderProgram->getUniformLocation("pointLights[1].ambient"), 0.05f, 0.05f, 0.05f);
 		glUniform3f(shaderProgram->getUniformLocation("pointLights[1].diffuse"), 1.0f, 1.0f, 1.0f);
 		glUniform3f(shaderProgram->getUniformLocation("pointLights[1].specular"), 1.0f, 1.0f, 1.0f);

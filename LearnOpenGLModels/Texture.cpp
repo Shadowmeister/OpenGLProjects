@@ -29,16 +29,16 @@ Texture::Texture(const std::string& texturePath, const std::string& directory, T
 }
 
 Texture::Texture(const Texture& other):
-m_Path {other.m_Path},
 m_TextureID{ other.m_TextureID },
-m_Type{ other.m_Type }
+m_Type{ other.m_Type },
+m_Path{ other.m_Path }
 {
 }
 
-Texture::Texture(Texture&& other) :
-m_Path{ std::move(other.m_Path) },
+Texture::Texture(Texture&& other) noexcept:
 m_TextureID{ std::move(other.m_TextureID) },
-m_Type{ std::move(other.m_Type) }
+m_Type{ std::move(other.m_Type) },
+m_Path{ std::move(other.m_Path) }
 {
 }
 

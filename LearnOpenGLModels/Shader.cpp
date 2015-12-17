@@ -104,10 +104,10 @@ void Shader::use()
 
 GLuint Shader::getUniformLocation(const GLchar* name) const
 { 
-	GLuint location = glGetUniformLocation(this->Program, name);
+	GLint location = glGetUniformLocation(this->Program, name);
 	if (location == -1)
 	{
-		std::cout << "Could not found uniform " << name << " location" << std::endl;
+		std::cout << "Could not found uniform '" << name << "' location" << std::endl;
 	}
 	return location;
 }

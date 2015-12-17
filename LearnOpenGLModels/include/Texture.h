@@ -27,13 +27,14 @@ public:
 		DIFFUSE,
 		SPECULAR,
 		EMISSIVE,
-		NORMAL
+		NORMAL,
+		HEIGHT
 	};
 
 public:
 	Texture(const std::string& texturePath, const std::string& directory, TextureTypes type, GLint wrapSParam, GLint wrapTParam, GLint minFilterParam, GLint magFilterParam);
 	Texture(const Texture& other);
-	Texture(Texture&& other) _NOEXCEPT;
+	Texture(Texture&& other) noexcept;
 
 	Texture& operator=(const Texture& other);
 	Texture& operator=(Texture&& other);
