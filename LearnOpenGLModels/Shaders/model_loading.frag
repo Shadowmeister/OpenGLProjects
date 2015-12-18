@@ -51,7 +51,7 @@ void main()
 	normal = normalize(normal * 2.0 - 1.0);
 	vec3 viewDir = normalize(fs_in.TangentViewPos - fs_in.TangentFragPos);
 
-	for(int i = 1; i < NR_POINT_LIGHTS; i++)
+	for(int i = 0; i < NR_POINT_LIGHTS; i++)
 	{
 		result += CalcPointLight(fs_in.TangentLightPos[i], pointLights[i], material, normal, fs_in.TangentFragPos, viewDir);
 	}
@@ -75,8 +75,8 @@ vec3 CalcPointLight(vec3 lightPos, PointLight light, Material mat, vec3 normal, 
 	float attenuation = 1.0f / (light.constant + light.linear * distance + light.quadratic * (distance * distance));
 	// Combine results
 	vec3 ambient = light.ambient * color;
-	vec3 diffuse = light.diffuse * diff * color;
-	vec3 specular = light.specular * spec * ((material.shininess + 8)/8*kPi);
+	vec3 diffuse = light.diffuse * diff * color / kPi;
+	vec3 specular = light.specular * vec3(texture(material.texture_specular1, fs_in.TexCoords)) * spec * ((material.shininess + 8)/8*kPi);
 	ambient *= attenuation;
 	diffuse *= attenuation;
 	specular *= attenuation;

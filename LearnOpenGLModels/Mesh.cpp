@@ -101,7 +101,7 @@ void Mesh::Draw(const Shader& shader)
     }
   }
 
-	glUniform1f(shader.getUniformLocation("material.shininess"), 128.0f);
+	glUniform1f(shader.getUniformLocation("material.shininess"), 32.0f);
 
 	// Draw mesh
 	glBindVertexArray(this->VAO);

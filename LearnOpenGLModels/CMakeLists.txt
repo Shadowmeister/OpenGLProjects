@@ -84,3 +84,6 @@ if(MSVC)
 endif(MSVC)
 
 include_directories(${CMAKE_SOURCE_DIR}/include)
+
+message("CMAKE FLAGS ${CMAKE_CXX_FLAGS}")
+message("CMAKE DEBUG FLAGS ${CMAKE_CXX_FLAGS_DEBUG}")

@@ -149,8 +149,8 @@ int main(int argc, char** argv)
 		// Set the lighting uniforms
 		glUniform3f(shaderProgram->getUniformLocation("viewPos"), camera.Position.x, camera.Position.y, camera.Position.z);
 
-		//pointLightPositions[1].x = sin(glfwGetTime()) * 2;
-		//pointLightPositions[1].z = cos(glfwGetTime()) * 2;
+		pointLightPositions[1].x = sin(glfwGetTime()) * 2;
+		pointLightPositions[1].z = cos(glfwGetTime()) * 2;
 
 		pointLightPositions[0].x = -pointLightPositions[1].x;
 		pointLightPositions[0].z = pointLightPositions[1].z;
