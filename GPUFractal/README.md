@@ -1,6 +1,5 @@
-This code is based off of the tutorial on LearnOpenGL.com
-I have made my own modifications for pactice.
-So far this is mostly just spliting the main.cpp into multiple classes
+This code is based off of the code that I based off of the tutorial on LearnOpenGL.com
+I have changed to OpenGL 4.5 so I can port some CUDA code from University over to OpenGL compute shaders.
 
 ---------------
 
