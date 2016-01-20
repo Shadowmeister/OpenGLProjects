@@ -1,0 +1,41 @@
+#version 430
+
+layout (local_size_x = 16, local_size_y = 16) in;
+
+layout(r32f) uniform image2D constImage;
+layout(r32f) uniform image2D inputImage;
+layout(r32f) uniform image2D outputImage;
+
+void copyConstImage()
+{
+	ivec2 pos = ivec2(gl_GlobalInvocationID.xy);
+	float temp = imageLoad(constImage, pos).r;
+	if(temp != 0.0)
+	{
+		imageStore(inputImage, pos, vec4(temp, 0.0, 0.0, 0.0));
+	}
+}
+
+void transferHeat()
+{
+	ivec2 pos = ivec2(gl_GlobalInvocationID.xy);
+
+	float t, l, c, r, b, tl, tr, bl, br;
+	t = imageLoad(inputImage, pos + ivec2(0, 1)).r;
+	l = imageLoad(inputImage, pos + ivec2(-1, 0)).r;
+	c = imageLoad(inputImage, pos).r;
+	r = imageLoad(inputImage, pos + ivec2(1, 0)).r;
+	b = imageLoad(inputImage, pos + ivec2(0, -1)).r;
+	tl = imageLoad(inputImage, pos + ivec2(-1, 1)).r;
+	tr = imageLoad(inputImage, pos + ivec2(1,  1)).r;
+	bl = imageLoad(inputImage, pos + ivec2(-1, -1)).r;
+	br = imageLoad(inputImage, pos + ivec2(1, -1)).r;
+
+	imageStore(outputImage, pos ,vec4(c + (t + b + l + r + tl + tr + bl + br)/8 - c, 0.0, 0.0, 0.0));
+}
+
+void main()
+{
+	copyConstImage();
+	transferHeat();
+}

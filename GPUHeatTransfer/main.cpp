@@ -45,10 +45,14 @@ GLfloat lastFrame = 0.0f;
 const int Major = 4;
 const int Minor = 5;
 
-float ab[2] = { 0, 0 };
-float offset[2] = { 0, 0 };
-float scale = 2;
-unsigned int loops = 500;
+const std::string root_dir(logl_root);
+
+GLuint constTextureID, inTextureID, outTextureID;
+
+std::shared_ptr<Shader> shaderProgram;
+std::shared_ptr<Shader> computeProgram;
+
+SimpleObject* container;
 
 void checkErrors(const std::string& location)
 {
@@ -105,12 +109,10 @@ int main(int argc, char** argv)
 	glEnable(GL_DEPTH_TEST);
 	checkErrors("Enable Depth Test");
 
-	std::string root_dir(logl_root);
-
 	// Build and Compile out shader program
-	std::shared_ptr<Shader> shaderProgram{ new Shader(root_dir+"/Shaders/TexturedVertex.vert", root_dir+"/Shaders/TexturedFragment.frag") };
+	shaderProgram.reset(new Shader(root_dir+"/Shaders/TexturedVertex.vert", root_dir+"/Shaders/TexturedFragment.frag"));
 	checkErrors("create shader program");
-	std::shared_ptr<Shader> computeProgram{ new Shader(root_dir + "/Shaders/GPUFract.comp") };
+	computeProgram.reset(new Shader(root_dir + "/Shaders/GPUHeatTransfer.comp"));
 	checkErrors("create compute program");
 
 	// Set up vertex data (and buffer(s)) and attribute pointers
@@ -124,25 +126,70 @@ int main(int argc, char** argv)
 		 1.0f,  1.0f,  0.0f, 1.0f, 1.0f   // Top Right
 	};
 
-	SimpleObject container(&vertices[0], sizeof(vertices), 6, shaderProgram);
+	container = new SimpleObject(&vertices[0], sizeof(vertices), 6, shaderProgram);
 	checkErrors("create container simple object");
-	container.AddAttrib(3, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), 0);
-	container.AddAttrib(2, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), 3 * sizeof(GLfloat));
+	container->AddAttrib(3, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), 0);
+	container->AddAttrib(2, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), 3 * sizeof(GLfloat));
 
 	// load textures
-	GLuint textureID;
+	int width, height;
+	unsigned char *image;
+	image = SOIL_load_image((root_dir+"/Textures/HeatSource.png").c_str(), &width, &height, 0, SOIL_LOAD_RGB);
 
-	glGenTextures(1, &textureID);
-	glBindTexture(GL_TEXTURE_2D, textureID);
-	glTexStorage2D(GL_TEXTURE_2D, 1, GL_RGBA32F, screenWidth, screenHeight);
-	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-	checkErrors("generate texture");
+	if (width != screenWidth || height != screenHeight)
+	{
+		std::cout << "Screen size doesn't match texture size" << std::endl;
+		return 0;
+	}
+
+	float* pixels = new float[screenWidth * screenHeight];
+
+	for (int i = 0; i < screenWidth * screenHeight; i++)
+	{
+		pixels[i] = (static_cast<float>(image[i*3])/255.0f);
+	}
+	SOIL_free_image_data(image);
+
+	glGenTextures(1, &constTextureID);
+	checkErrors("genTextures");
+	glActiveTexture(GL_TEXTURE0);
+	checkErrors("glActiveTexture");
+	glBindTexture(GL_TEXTURE_2D, constTextureID);
+	checkErrors("glBindTexture");
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_R32F, screenWidth, screenHeight, 0, GL_RED, GL_FLOAT, pixels);
+	delete pixels;
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+
+	checkErrors("generate consttexture");
+	//glTexStorage2D(GL_TEXTURE_2D, 1, GL_R32F, screenWidth, screenHeight);
+
+	glGenTextures(1, &inTextureID);
+	glActiveTexture(GL_TEXTURE1);
+	glBindTexture(GL_TEXTURE_2D, inTextureID);
+	glTexStorage2D(GL_TEXTURE_2D, 1, GL_R32F, screenWidth, screenHeight);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	checkErrors("generate intexture");
+
+	glGenTextures(1, &outTextureID);
+	glActiveTexture(GL_TEXTURE2);
+	glBindTexture(GL_TEXTURE_2D, outTextureID);
+	glTexStorage2D(GL_TEXTURE_2D, 1, GL_R32F, screenWidth, screenHeight);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+
+	glActiveTexture(GL_TEXTURE0);
+	
+	checkErrors("generate outtexture");
+
 	computeProgram->use();
-	glUniform1i(computeProgram->getUniformLocation("destTex"), 0);
+	glUniform1i(computeProgram->getUniformLocation("constImage"), 0);
+	glUniform1i(computeProgram->getUniformLocation("inputImage"), 1);
+	glUniform1i(computeProgram->getUniformLocation("outputImage"), 2);
 	checkErrors("set destTex uniform");
 	shaderProgram->use();
-	glUniform1i(shaderProgram->getUniformLocation("ourTexture"), 0);
+	glUniform1i(shaderProgram->getUniformLocation("ourTexture"), 2);
 	checkErrors("Set ourTexture uniform");
 
 	// Set texture units
@@ -150,6 +197,7 @@ int main(int argc, char** argv)
 	glUniform1i(shaderProgram->getUniformLocation("material.diffuse"), 0);*/
 	long frameCount = 0;
 	GLfloat PreviousTime = 0;
+	bool isOutTexture = false;
 	// Game loop
 	while (!glfwWindowShouldClose(window))
 	{
@@ -181,12 +229,22 @@ int main(int argc, char** argv)
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		computeProgram->use();
-
-		glUniform2f(computeProgram->getUniformLocation("ab"), ab[0], ab[1]);
-		glUniform2f(computeProgram->getUniformLocation("offset"), offset[0], offset[1]);
-		glUniform1f(computeProgram->getUniformLocation("scale"), scale);
-		glUniform1ui(computeProgram->getUniformLocation("maxLoops"), loops);
-		glBindImageTexture(0, textureID, 0, GL_FALSE, 0, GL_WRITE_ONLY, GL_RGBA32F);
+		glBindImageTexture(0, constTextureID, 0, GL_FALSE, 0, GL_READ_ONLY, GL_R32F);
+		if (isOutTexture)
+		{
+			glBindImageTexture(1, inTextureID, 0, GL_FALSE, 0, GL_WRITE_ONLY, GL_R32F);
+			glBindImageTexture(2, outTextureID, 0, GL_FALSE, 0, GL_READ_ONLY, GL_R32F);
+			glUniform1i(computeProgram->getUniformLocation("inputImage"), 2);
+			glUniform1i(computeProgram->getUniformLocation("outputImage"), 1);
+		}
+		else
+		{
+			glBindImageTexture(1, inTextureID, 0, GL_FALSE, 0, GL_READ_ONLY, GL_R32F);
+			glBindImageTexture(2, outTextureID, 0, GL_FALSE, 0, GL_WRITE_ONLY, GL_R32F);
+			glUniform1i(computeProgram->getUniformLocation("inputImage"), 1);
+			glUniform1i(computeProgram->getUniformLocation("outputImage"), 2);
+		}
+		
 		checkErrors("BindImageTexture");
 
 		glDispatchCompute(screenWidth / 16, screenHeight / 16, 1);
@@ -195,10 +253,21 @@ int main(int argc, char** argv)
 
 
 		shaderProgram->use();
-		glBindTexture(GL_TEXTURE_2D, textureID);
+		if (isOutTexture)
+		{
+			glUniform1i(shaderProgram->getUniformLocation("ourTexture"), 1);
+		}
+		else
+		{
+			glUniform1i(shaderProgram->getUniformLocation("ourTexture"), 2);
+		}
+		//glActiveTexture(GL_TEXTURE0);
+		//glBindTexture(GL_TEXTURE_2D, constTextureID);
 		checkErrors("Bind Texture");
-		container.Draw();
+		container->Draw();
 		checkErrors("Draw To Screen");
+
+		isOutTexture = !isOutTexture;
 
 		// Swap the buffers
 		glfwSwapBuffers(window);
@@ -206,87 +275,58 @@ int main(int argc, char** argv)
 	// properly de-allocate all resources once they've outlived their purpose
 	glfwTerminate();
 
-	return 0;
-}
+	delete container;
 
-void reset()
-{
-	scale = 2;
-	offset[0] = 0;
-	offset[1] = 0;
-	ab[0] = -0.747753;
-	ab[1] = 0.05f;
+	return 0;
 }
 
 // Moves/alters the camera positions based on user input
 void Do_Movement(float dt)
 {
-	// Camera controls
-	if (keys[GLFW_KEY_W])
-	{
-		ab[0] += 0.1f * dt;
-	}
-	if (keys[GLFW_KEY_S])
-	{
-		ab[0] -= 0.1f * dt;
-	}
-	if (keys[GLFW_KEY_A])
-	{
-		ab[1] -= 0.1f * dt;
-	}
-	if (keys[GLFW_KEY_D])
-	{
-		ab[1] += 0.1f * dt;
-	}
-	if (keys[GLFW_KEY_Q])
-	{
-		scale -= 0.5f * scale * dt;
-	}
-	if (keys[GLFW_KEY_E])
-	{
-		scale += 0.5f * scale * dt;
-	}
 	if (keys[GLFW_KEY_R])
 	{
-		reset();
+		int width, height;
+		unsigned char *image;
+		image = SOIL_load_image((root_dir + "/Textures/HeatSource.png").c_str(), &width, &height, 0, SOIL_LOAD_RGB);
+
+		if (width != screenWidth || height != screenHeight)
+		{
+			std::cout << "Screen size doesn't match texture size" << std::endl;
+			exit(20);
+		}
+
+		float* pixels = new float[screenWidth * screenHeight];
+
+		for (int i = 0; i < screenWidth * screenHeight; i++)
+		{
+			pixels[i] = (static_cast<float>(image[i * 3]) / 255.0f);
+		}
+		SOIL_free_image_data(image);
+
+		glActiveTexture(GL_TEXTURE0);
+		checkErrors("glActiveTexture");
+		glBindTexture(GL_TEXTURE_2D, constTextureID);
+		checkErrors("glBindTexture");
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_R32F, screenWidth, screenHeight, 0, GL_RED, GL_FLOAT, pixels);
+		delete pixels;
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 		keys[GLFW_KEY_R] = false;
 	}
-	if (keys[GLFW_KEY_UP])
+
+	if (keys[GLFW_KEY_S])
 	{
-		offset[0] += 0.1f * scale * dt;
+		shaderProgram.reset(new Shader(root_dir + "/Shaders/TexturedVertex.vert", root_dir + "/Shaders/TexturedFragment.frag"));
+		container->SetShader(shaderProgram);
+		keys[GLFW_KEY_S] = false;
 	}
-	if (keys[GLFW_KEY_DOWN])
+
+	if (keys[GLFW_KEY_C])
 	{
-		offset[0] -= 0.1f * scale * dt;
+		computeProgram.reset(new Shader(root_dir + "/Shader/GPUHeatTransfer.comp"));
+		keys[GLFW_KEY_C] = false;
 	}
-	if (keys[GLFW_KEY_LEFT])
-	{
-		offset[1] -= 0.1f * scale * dt;
-	}
-	if (keys[GLFW_KEY_RIGHT])
-	{
-		offset[1] += 0.1f * scale * dt;
-	}
-	if (keys[GLFW_KEY_PAGE_UP])
-	{
-		loops += 100;
-		keys[GLFW_KEY_PAGE_UP] = false;
-	}
-	if (keys[GLFW_KEY_PAGE_DOWN])
-	{
-		loops -= 100;
-		keys[GLFW_KEY_PAGE_DOWN] = false;
-	}
-	if (keys[GLFW_KEY_SPACE])
-	{
-		std::cout << "===============================" << std::endl;
-		std::cout << "\na = " << ab[0] << ", b = " << ab[1] << std::endl;
-		std::cout << "scale = " << scale << std::endl;
-		std::cout << "offset X = " << offset[0] << " \t offset Y = " << offset[1] << std::endl;
-		std::cout << "max iterations = " << loops << std::endl;
-		std::cout << "===============================" << std::endl;
-		keys[GLFW_KEY_SPACE] = false;
-	}
+	
 }
 
 // Is called whenever a key is pressed/released via GLFW
